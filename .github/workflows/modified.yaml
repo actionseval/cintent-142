@@ -1,0 +1,82 @@
+name: Test ASReview extensions
+
+# CINTENT >> MANUAL TRIGGER
+# on: [push, pull_request]
+on: [repository_dispatch, workflow_dispatch]
+
+jobs:
+  test-asreview-datatools:
+    name: test-asreview-datatools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # CINTENT >> INSERT_CINTENT
+      - uses: JavidDitty/setup-cintent@a606c80c34ec190c6a20dea33d6d58ddb6c4e0cc
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install packages
+        run: |
+          pip install pytest
+          pip install --no-cache-dir .
+
+      - name: Install extension
+        run: |
+          git clone https://github.com/asreview/asreview-datatools
+          cd asreview-datatools
+          latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $latestTag
+          pip install .
+
+      - name: Run test on asreview-datatools
+        run: |
+          pytest asreview-datatools/tests/
+
+      # CINTENT >> INSERT_CINTENT
+      - name: Upload CIntent Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ env.CINTENT_ARTIFACT_NAME }}
+          path: ${{ env.CINTENT_LOGS }}
+
+  test-asreview-insights:
+    name: test-asreview-insights
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # CINTENT >> INSERT_CINTENT
+      - uses: JavidDitty/setup-cintent@a606c80c34ec190c6a20dea33d6d58ddb6c4e0cc
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install packages
+        run: |
+          pip install pytest
+          pip install --no-cache-dir .
+
+      - name: Install extension
+        run: |
+          git clone https://github.com/asreview/asreview-insights
+          cd asreview-insights
+          latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $latestTag
+          pip install .
+          
+      - name: Run test on asreview-insights
+        run: |
+          pytest asreview-insights/tests/
+
+      # CINTENT >> INSERT_CINTENT
+      - name: Upload CIntent Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ env.CINTENT_ARTIFACT_NAME }}
+          path: ${{ env.CINTENT_LOGS }}
